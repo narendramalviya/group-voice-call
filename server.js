@@ -82,6 +82,10 @@ io.on('connection', (socket) => {
     });
 });
 
+//health check
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
 // Start the server and listen on the specified port
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);

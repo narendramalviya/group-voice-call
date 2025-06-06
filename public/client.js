@@ -17,7 +17,7 @@ const leaveCallBtn = document.getElementById('leave-call-btn');
 const roomLinkContainer = document.getElementById('room-link-container');
 const roomLinkSpan = document.getElementById('room-link');
 const statusMessage = document.getElementById('status-message');
-const muteUnmuteBtn = document.getElementById('mute-unmute-btn'); // New: Reference to the mute/unmute button
+const muteUnmuteBtn = document.getElementById('mute-unmute-btn'); // Reference to the mute/unmute button
 
 // Global variables for local media stream and peer connections
 let localStream;
@@ -26,7 +26,7 @@ const peerConnections = {};
 // usersInRoom stores the user's chosen name (userId) for each peer, keyed by their socket.id
 const usersInRoom = {}; 
 
-// New: Variable to track mic mute state
+// Variable to track mic mute state
 let isMicMuted = false;
 
 // Configuration for ICE (Interactive Connectivity Establishment) servers.
@@ -91,7 +91,7 @@ joinCallBtn.addEventListener('click', async () => {
         // Emit 'join-room' event to the signaling server
         socket.emit('join-room', roomId, userId);
 
-        // New: Initialize mute button state
+        // Initialize mute button state
         isMicMuted = false; // Assume mic is active initially
         muteUnmuteBtn.textContent = 'Mute Mic';
         muteUnmuteBtn.classList.remove('mute-btn-muted');
@@ -134,26 +134,38 @@ leaveCallBtn.addEventListener('click', () => {
     window.location.reload();
 });
 
-// New: Event listener for the "Mute/Unmute Mic" button
+// Event listener for the "Mute/Unmute Mic" button
 muteUnmuteBtn.addEventListener('click', () => {
+    // Debugging: Log the localStream and its audio tracks
+    console.log('Mute/Unmute button clicked.');
+    console.log('Current localStream:', localStream);
     if (localStream) {
-        // Get all audio tracks from the local stream (usually there's only one)
-        localStream.getAudioTracks().forEach(track => {
-            track.enabled = !track.enabled; // Toggle the 'enabled' state of the track
-            isMicMuted = !track.enabled; // Update our internal state
-        });
+        const audioTracks = localStream.getAudioTracks();
+        console.log('Audio tracks available:', audioTracks);
 
-        // Update button text and styling based on the new mute state
-        if (isMicMuted) {
-            muteUnmuteBtn.textContent = 'Unmute Mic';
-            muteUnmuteBtn.classList.remove('mute-btn-active');
-            muteUnmuteBtn.classList.add('mute-btn-muted');
-            console.log('Microphone muted.');
+        if (audioTracks.length > 0) {
+            // Get the first audio track (assuming only one mic track)
+            const audioTrack = audioTracks[0];
+            audioTrack.enabled = !audioTrack.enabled; // Toggle the 'enabled' state of the track
+            isMicMuted = !audioTrack.enabled; // Update our internal state
+
+            // Update button text and styling based on the new mute state
+            if (isMicMuted) {
+                muteUnmuteBtn.textContent = 'Unmute Mic';
+                muteUnmuteBtn.classList.remove('mute-btn-active');
+                muteUnmuteBtn.classList.add('mute-btn-muted');
+                console.log('Microphone muted.');
+            } else {
+                muteUnmuteBtn.textContent = 'Mute Mic';
+                muteUnmuteBtn.classList.remove('mute-btn-muted');
+                muteUnmuteBtn.classList.add('mute-btn-active');
+                console.log('Microphone unmuted.');
+            }
         } else {
-            muteUnmuteBtn.textContent = 'Mute Mic';
-            muteUnmuteBtn.classList.remove('mute-btn-muted');
-            muteUnmuteBtn.classList.add('mute-btn-active');
-            console.log('Microphone unmuted.');
+            console.warn('No audio tracks found in localStream. Cannot toggle mic mute.');
+            statusMessage.textContent = 'No active microphone found. Please check device permissions.';
+            statusMessage.style.color = '#dc3545';
+            setTimeout(() => statusMessage.textContent = '', 4000);
         }
     } else {
         console.warn('Cannot toggle mic mute: local stream not available.');
