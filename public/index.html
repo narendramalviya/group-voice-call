@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Voice Call</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS to override/enhance Tailwind for this specific app */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        .container {
+            max-width: 600px;
+        }
+        input[type="text"], button {
+            transition: all 0.2s ease-in-out;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #room-link-container {
+            word-break: break-all; /* Ensures long links don't break layout */
+        }
+        /* Style for mute/unmute button states */
+        .mute-btn-muted {
+            background-color: #dc3545; /* Red for muted */
+        }
+        .mute-btn-muted:hover {
+            background-color: #c82333;
+        }
+        .mute-btn-active {
+            background-color: #28a745; /* Green for active/unmuted */
+        }
+        .mute-btn-active:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="container bg-white p-8 rounded-lg shadow-xl text-center w-full">
+        <h1 class="text-4xl font-bold text-blue-700 mb-6">Group Voice Call</h1>
+
+        <div id="pre-call" class="space-y-4">
+            <input type="text" id="room-id-input" placeholder="Enter Room ID (e.g., my-group-chat)"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+            <input type="text" id="user-id-input" placeholder="Your Name (e.g., Alice)"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+            <button id="join-call-btn"
+                    class="w-full bg-blue-600 text-white p-3 rounded-md font-semibold hover:bg-blue-700 active:bg-blue-800 shadow-md">
+                Join Call
+            </button>
+            <p id="status-message" class="text-sm text-gray-600 mt-2"></p>
+        </div>
+
+        <div id="in-call" class="hidden space-y-4">
+            <h2 class="text-2xl font-semibold text-gray-800">In Call: Room <span id="current-room-id" class="text-blue-600"></span></h2>
+            <p id="local-user-name" class="text-lg text-gray-700"></p>
+            
+            <div id="room-link-container" class="hidden bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-md flex flex-col sm:flex-row items-center justify-between">
+                <span class="mb-2 sm:mb-0 sm:mr-4">Share this link: <span id="room-link" class="font-bold"></span></span>
+                <button onclick="copyRoomLink()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 shadow-sm text-sm">
+                    Copy Link
+                </button>
+            </div>
+
+            <button id="mute-unmute-btn" 
+                    class="w-full p-3 rounded-md font-semibold shadow-md mt-4 mute-btn-active">
+                Mute Mic
+            </button>
+
+
+            <audio id="local-audio" autoplay muted class="hidden"></audio>
+
+            <h3 class="text-xl font-semibold text-gray-800 mt-6">Participants:</h3>
+            <div id="remote-audios" class="flex flex-wrap justify-center gap-4 mt-4">
+                </div>
+
+            <button id="leave-call-btn"
+                    class="w-full bg-red-600 text-white p-3 rounded-md font-semibold hover:bg-red-700 active:bg-red-800 shadow-md mt-6">
+                Leave Call
+            </button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
